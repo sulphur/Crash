@@ -1,8 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # Test whether a client can connect without an SSL certificate if one is required.
 # 
 
+import errno
 import subprocess
 import socket
 import ssl
@@ -31,12 +32,15 @@ broker = subprocess.Popen(['../../src/mosquitto', '-c', '08-ssl-connect-cert-aut
 time.sleep(0.5)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ssock = ssl.wrap_socket(sock, ca_certs="../ssl/test-ca.crt", cert_reqs=ssl.CERT_REQUIRED)
-ssock.settimeout(10)
+ssock = ssl.wrap_socket(sock, ca_certs="../ssl/test-root-ca.crt", cert_reqs=ssl.CERT_REQUIRED)
+ssock.settimeout(20)
 try:
     ssock.connect(("localhost", 1888))
 except ssl.SSLError as err:
     if err.errno == 1:
+        rc = 0
+except socket.error as err:
+    if err.errno == errno.ECONNRESET:
         rc = 0
 
 broker.terminate()

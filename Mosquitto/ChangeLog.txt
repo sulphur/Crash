@@ -1,9 +1,132 @@
-1.2 - 2013xxxx
+1.3 - 20140316
+==============
+
+Broker:
+- The broker no longer ignores the auth_plugin_init() return value.
+- Accept SSLv2/SSLv3 HELLOs when using TLSv1, whilst keeping SSLv2 and SSLv3
+  disabled. This increases client compatibility without sacrificing security.
+- The $SYS tree can now be disabled at runtime as well as at compile time.
+- When remapping bridged topics, only check for matches when the message
+  direction is correct. This allows two identical topics to be remapped
+  differently for both in and out.
+- Change "$SYS/broker/heap/current size" to "$SYS/broker/heap/current" for
+  easier parsing.
+- Change "$SYS/broker/heap/maximum size" to "$SYS/broker/heap/maximum" for
+  easier parsing.
+- Topics are no longer normalised from e.g a///topic to a/topic. This matches
+  the behaviour as clarified by the Oasis MQTT spec. This will lead to
+  unexpected behaviour if you were using topics of this form.
+- Log when outgoing messages for a client begin to drop off the end of the
+  queue.
+- Bridge clients are recognised as bridges even after reloading from
+  persistence.
+- Basic support for MQTT v3.1.1. This does not include being able to bridge to
+  an MQTT v3.1.1 broker.
+- Username is displayed in log if present when a client connects.
+- Support for 0 length client ids (v3.1.1 only) that result in automatically
+  generated client ids on the broker (see option allow_zero_length_clientid).
+- Ability to set the prefix of automatically generated client ids (see option
+  auto_id_prefix).
+- Add support for TLS session resumption.
+- When using TLS, the server now chooses the cipher to use when negotiating
+  with the client.
+- Weak TLS ciphers are now disabled by default.
+
+Client library:
+- Fix support for Python 2.6, 3.0, 3.1.
+- Add support for un/subscribing to multiple topics at once in un/subscribe().
+- Clients now close their socket after sending DISCONNECT.
+- Python client now contains its version number.
+- C library mosquitto_want_write() now supports TLS clients.
+- Fix possible memory leak in C/C++ library when communicating with
+  a broker that doesn't follow the spec.
+- Return strerror() through mosquitto_strerror() to make error printing
+  easier.
+- Topics are no longer normalised from e.g a///topic to a/topic. This matches
+  the behaviour as clarified by the Oasis MQTT spec. This will lead to
+  unexpected behaviour if you were using topics of this form.
+- Add support for SRV lookups.
+- Break out of select() on publish(), subscribe() etc. when using the threaded
+  interface. Fixes bug #1270062.
+- Handle incoming and outgoing messages separately. Fixes bug #1263172.
+- Don't terminate threads on mosquitto_destroy() when a client is not using
+  the threaded interface but does use their own thread. Fixes bug #1291473.
+
+Clients:
+- Add --ciphers to allow specifying which TLS ciphers to support.
+- Add support for SRV lookups.
+- Add -N to sub client to suppress printing of EOL after the payload.
+- Add -T to sub client to suppress printing of a topic hierarchy.
+
+1.2.3 - 20131202
+================
+
+Broker:
+- Don't always attempt to call read() for SSL clients, irrespective of whether
+  they were ready to read or not. Reduces syscalls significantly.
+- Possible memory leak fixes. 
+- Further fix for bug #1226040: multiple retained messages being delivered for
+  subscriptions ending in #.
+- Fix bridge reconnections when using multiple bridge addresses.
+
+Client library:
+- Fix possible memory leak in C/C++ library when communicating with
+  a broker that doesn't follow the spec.
+- Block in Python loop_stop() until all messages are sent, as the
+  documentation states should happen.
+- Fix for asynchronous connections on Windows. Closes bug #1249202.
+- Module version is now available in mosquitto.py.
+
+Clients:
+- mosquitto_sub now uses fwrite() instead of printf() to output messages, so
+  messages with NULL characters aren't truncated.
+
+1.2.2 - 20131021
+================
+
+Broker:
+- Fix compliance with max_inflight_messages when a non-clean session client
+  reconnects. Closes one of the issues on bug #1237389.
+
+Client library:
+- Fix incorrect inflight message accounting, which caused messages to go
+  unsent. Partial fix for bug #1237351.
+- Fix potential memory corruption when sending QoS>0 messages at a high rate
+  using the threaded interface. Further fix for #1237351.
+- Fix incorrect delay scaling when exponential_backoff=true in
+  mosquitto_reconnect_delay_set().
+- Some pep8 fixes for Python.
+
+1.2.1 - 20130918
+================
+
+Broker:
+- The broker no longer ignores the auth_plugin_init() return value. Closes
+  bug #1215084.
+- Use RTLD_GLOBAL when opening authentication plugins on posix systems. Fixes
+  resolving of symbols in libraries used by authentication plugins.
+- Add/fix some config documentation.
+- Fix ACLs for topics with $SYS.
+- Clients loaded from the persistence file on startup were not being added to
+  the client hash, causing subtle problems when the client reconnected,
+  including ACLs failing. This has been fixed.
+- Add note to mosquitto-tls man page stating that certificates need to be
+  unique. Closes bug #1221285.
+- Fix incorrect retained message delivery when using wildcard subs in some
+  circumstances. Fixes bug #1226040.
+
+Client library:
+- Fix support for Python 2.6, 3.0, 3.1.
+- Fix TLS subjectAltName verification and segfaults.
+- Handle EAGAIN in Python on Windows. Closes bug #1220004.
+- Fix compilation when using WITH_TLS=no.
+- Don't fail reconnecting in Python when broker is temporarily unavailable.
+
+1.2 - 20130708
 ==============
 
 Broker:
 - Replace O(n) username lookup on CONNECT with a roughly O(1) hashtable version.
-- Add support for round_robin bridge option.
 - It is now possible to disable $SYS at compile time.
 - Add dropped publish messages to load tree in $SYS. Closes bug #1183318.
 - Add support for logging SUBSCRIBE/UNSUBSCRIBE events.
@@ -17,6 +140,7 @@ Broker:
 - Add support for "log_type all".
 - Add support for "-v" option on the command line to provide the equivalent of
   "log_type all" without needing a config file.
+- Add the "upgrade_outgoing_qos" option, a non-standard feature.
 - Persistence data is now written to a temporary file which is atomically
   renamed on completion, so a crash during writing will not produce a corrupt
   file.
@@ -26,11 +150,10 @@ Broker:
   causing client disconnections or message retries.
 - Clean session and keepalive status are now display the log when a client
   connects.
-- The broker now attempts to resolve bind_address and bridge addresses
-  immediately when parsing the config file in order to detect invalid hosts.
-- Fix problem with out of order calls to free() when restarting a lazy bridge.
+- Add support for TLSv1.2 and TLSv1.1.
+- Clients that connect with zero length will topics are now rejected.
+- Add the ability to set a maximum allowed PUBLISH payload size.
 - Fix an ACL with topic "#" incorrectly granting access to $SYS.
-- mosquitto_passwd utility now reports errors more clearly.
 - Fix retained messages incorrectly being set on wildcard topics, leading to
   duplicate retained messages being sent on subscription. Closes bug #1116233.
 - Don't discard listener values when no "port" option given. Closes bug
@@ -44,12 +167,41 @@ Broker:
 - Fix remapping of messages for clients connected to a listener with
   mount_point set. Closes bug #1180765.
 - Fix duplicate retained messages being sent for some wildcard patterns.
+- If a client connects with a will topic to which they do not have write
+  access, they are now disconnected with CONNACK "not authorised".
+- Fix retained messages on topic foo being incorrectly delivered to
+  subscriptions of /#
+- Fix handling of SSL errors on SSL_accept().
+- Fix handling of QoS 2 messages on client reconnect.
+- Drop privileges now sets supplementary groups correctly.
+- Fix load reporting interval (is now 60s).
+- Be strict with malformed PUBLISH packets - clients are now disconnected
+  rather than the packet discarded. This goes inline with future OASIS spec
+  changes and makes other changes more straightforward.
+- Process incoming messages denied by ACL properly so that clients don't keep
+  resending them.
+
+- Add support for round_robin bridge option.
+- Add bridge support for verifying remote server certificate subject against
+  the remote hostname.
+- Fix problem with out of order calls to free() when restarting a lazy bridge.
 - The broker now attempts to resolve bind_address and bridge addresses
   immediately when parsing the config file in order to detect invalid hosts.
 - Bridges now set their notification state before attempting to connect, so if
   they fail to connect the state can still be seen.
+- Fix bridge notification payload length - no need to send a null byte.
+
+- mosquitto_passwd utility now reports errors more clearly.
+- Fix "mosquitto_passwd -U".
 
 Client library:
+- Add support for TLSv1.2 and TLSv1.1, except for on the Python module.
+- Add support for verifying remote server certificate subject against the
+  remote hostname.
+- Add mosquitto_reconnect_async() support and make asynchronous connections
+  truely asynchronous rather than simply deferred. DNS lookups are still
+  blocking, so asynchronous connections require an IP address instead of
+  hostname.
 - Allow control of reconnection timeouts in mosquitto_loop_forever() and after
   mosquitto_loop_start() by using mosquitto_reconnect_delay_set().
 - Fix building on Android NDK.
@@ -62,9 +214,19 @@ Client library:
 - Fix possible crash after disconnects when using the threaded interface with
   TLS.
 - Allow build/install without Python. Closes bug #1174972.
+- Add support for binding connection to a local interface.
+- Implement maximum inflight messages handling.
+- Fix Python client not handling will_payload==None.
+- Fix potential memory leak when setting username/password.
+- Fix handling of QoS 2 messages on reconnect.
+- Improve handling of mosquitto_disconnect() with threaded mode.
+
 
 Clients:
+- Add support for TLSv1.2 and TLSv1.1.
 - Sub client can now suppress printing of messages with the retain bit set.
+- Add support for binding connection to a local interface.
+- Implement maximum inflight messages handling for the pub client.
 
 1.1.3 - 20130211
 ================

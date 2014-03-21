@@ -113,6 +113,11 @@
 					<paramdef>const char *<parameter>ciphers</parameter></paramdef>
 			</funcprototype></funcsynopsis>
 
+			<funcsynopsis><funcprototype><funcdef>int <function>mosquitto_tls_insecure_set</function></funcdef>
+					<paramdef>struct mosquitto *<parameter>mosq</parameter></paramdef>
+					<paramdef>bool <parameter>value</parameter></paramdef>
+			</funcprototype></funcsynopsis>
+
 			<funcsynopsis><funcprototype><funcdef>int <function>mosquitto_tls_psk_set</function></funcdef>
 					<paramdef>struct mosquitto *<parameter>mosq</parameter></paramdef>
 					<paramdef>const char *<parameter>psk</parameter></paramdef>
@@ -141,21 +146,41 @@
 		<refsect2>
 			<title>Connect/disconnect</title>
 
-			<funcsynopsis><funcprototype><funcdef>void <function>mosquitto_connect</function></funcdef>
+			<funcsynopsis><funcprototype><funcdef>int <function>mosquitto_connect</function></funcdef>
 					<paramdef>struct mosquitto *<parameter>mosq</parameter></paramdef>
 					<paramdef>const char *<parameter>host</parameter></paramdef>
 					<paramdef>int <parameter>port</parameter></paramdef>
 					<paramdef>int <parameter>keepalive</parameter></paramdef>
 			</funcprototype></funcsynopsis>
 
-			<funcsynopsis><funcprototype><funcdef>void <function>mosquitto_connect_async</function></funcdef>
+			<funcsynopsis><funcprototype><funcdef>int <function>mosquitto_connect_bind</function></funcdef>
+					<paramdef>struct mosquitto *<parameter>mosq</parameter></paramdef>
+					<paramdef>const char *<parameter>host</parameter></paramdef>
+					<paramdef>int <parameter>port</parameter></paramdef>
+					<paramdef>int <parameter>keepalive</parameter></paramdef>
+					<paramdef>const char *<parameter>bind_address</parameter></paramdef>
+			</funcprototype></funcsynopsis>
+
+			<funcsynopsis><funcprototype><funcdef>int <function>mosquitto_connect_async</function></funcdef>
 					<paramdef>struct mosquitto *<parameter>mosq</parameter></paramdef>
 					<paramdef>const char *<parameter>host</parameter></paramdef>
 					<paramdef>int <parameter>port</parameter></paramdef>
 					<paramdef>int <parameter>keepalive</parameter></paramdef>
 			</funcprototype></funcsynopsis>
 
-			<funcsynopsis><funcprototype><funcdef>void <function>mosquitto_reconnect</function></funcdef>
+			<funcsynopsis><funcprototype><funcdef>int <function>mosquitto_connect_bind_async</function></funcdef>
+					<paramdef>struct mosquitto *<parameter>mosq</parameter></paramdef>
+					<paramdef>const char *<parameter>host</parameter></paramdef>
+					<paramdef>int <parameter>port</parameter></paramdef>
+					<paramdef>int <parameter>keepalive</parameter></paramdef>
+					<paramdef>const char *<parameter>bind_address</parameter></paramdef>
+			</funcprototype></funcsynopsis>
+
+			<funcsynopsis><funcprototype><funcdef>int <function>mosquitto_reconnect</function></funcdef>
+					<paramdef>struct mosquitto *<parameter>mosq</parameter></paramdef>
+			</funcprototype></funcsynopsis>
+
+			<funcsynopsis><funcprototype><funcdef>int <function>mosquitto_reconnect_async</function></funcdef>
 					<paramdef>struct mosquitto *<parameter>mosq</parameter></paramdef>
 			</funcprototype></funcsynopsis>
 
@@ -248,6 +273,11 @@
 
 		<refsect2>
 			<title>Misc client functions</title>
+
+			<funcsynopsis><funcprototype><funcdef>int <function>mosquitto_max_inflight_messages_set</function></funcdef>
+					<paramdef>struct mosquitto *<parameter>mosq</parameter></paramdef>
+					<paramdef>unsigned int <parameter>max_inflight_messages</parameter></paramdef>
+			</funcprototype></funcsynopsis>
 
 			<funcsynopsis><funcprototype><funcdef>int <function>mosquitto_message_retry_set</function></funcdef>
 					<paramdef>struct mosquitto *<parameter>mosq</parameter></paramdef>
@@ -426,16 +456,18 @@ int main(int argc, char *argv[])
 	</refsect1>
 	<refsect1>
 		<title>See Also</title>
-		<para>
-			<citerefentry>
-				<refentrytitle><link xlink:href="mosquitto-8.html">mosquitto</link></refentrytitle>
-				<manvolnum>8</manvolnum>
-			</citerefentry>
-			<citerefentry>
-				<refentrytitle><link xlink:href="mqtt-7.html">mqtt</link></refentrytitle>
-				<manvolnum>7</manvolnum>
-			</citerefentry>
-		</para>
+		<simplelist type="inline">
+			<member>
+				<citerefentry>
+					<refentrytitle><link xlink:href="mosquitto-8.html">mosquitto</link></refentrytitle>
+					<manvolnum>8</manvolnum>
+				</citerefentry>
+				<citerefentry>
+					<refentrytitle><link xlink:href="mqtt-7.html">mqtt</link></refentrytitle>
+					<manvolnum>7</manvolnum>
+				</citerefentry>
+			</member>
+		</simplelist>
 	</refsect1>
 
 	<refsect1>

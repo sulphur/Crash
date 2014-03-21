@@ -1,11 +1,12 @@
 #include <stdio.h>
+#include <string.h>
 #include <mosquitto.h>
 
 void print_error(const char *topic, char **topics, int topic_count)
 {
 	int i;
 	printf("TOPIC: %s\n", topic);
-	printf("TOKENS: ", topic);
+	printf("TOKENS: ");
 	for(i=0; i<topic_count; i++){
 		printf("%s", topics[i]);
 		if(i+1<topic_count){
@@ -79,6 +80,48 @@ int main(int argc, char *argv[])
 			|| strcmp(topics[2], "b")
 			|| strcmp(topics[3], "c")){
 		print_error("/a/b/c", topics, topic_count);
+		return 1;
+	}
+
+	if(mosquitto_sub_topic_tokenise("a///hierarchy", &topics, &topic_count)){
+		printf("Out of memory.\n");
+		return 1;
+	}
+	if(topic_count != 4
+			|| strcmp(topics[0], "a")
+			|| topics[1]
+			|| topics[2]
+			|| strcmp(topics[3], "hierarchy")){
+		print_error("a///hierarchy", topics, topic_count);
+		return 1;
+	}
+
+	if(mosquitto_sub_topic_tokenise("/a///hierarchy", &topics, &topic_count)){
+		printf("Out of memory.\n");
+		return 1;
+	}
+	if(topic_count != 5
+			|| topics[0]
+			|| strcmp(topics[1], "a")
+			|| topics[2]
+			|| topics[3]
+			|| strcmp(topics[4], "hierarchy")){
+		print_error("/a///hierarchy", topics, topic_count);
+		return 1;
+	}
+
+	if(mosquitto_sub_topic_tokenise("/a///hierarchy/", &topics, &topic_count)){
+		printf("Out of memory.\n");
+		return 1;
+	}
+	if(topic_count != 6
+			|| topics[0]
+			|| strcmp(topics[1], "a")
+			|| topics[2]
+			|| topics[3]
+			|| strcmp(topics[4], "hierarchy")
+			|| topics[3]){
+		print_error("/a///hierarchy/", topics, topic_count);
 		return 1;
 	}
 

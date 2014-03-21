@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # Test whether a client will is transmitted correctly with a null character in the middle.
 
@@ -21,30 +21,25 @@ keepalive = 60
 connect_packet = mosq_test.gen_connect("will-qos0-test", keepalive=keepalive)
 connack_packet = mosq_test.gen_connack(rc=0)
 
-subscribe_packet = mosq_test.gen_subscribe(mid, "will/qos0/test", 0)
+subscribe_packet = mosq_test.gen_subscribe(mid, "will/null/test", 0)
 suback_packet = mosq_test.gen_suback(mid, 0)
 
-publish_packet = mosq_test.gen_publish("will/qos0/test", qos=0, payload=struct.pack("!4sB7s", "will", 0, "message"))
+publish_packet = mosq_test.gen_publish("will/null/test", qos=0)
 
 broker = subprocess.Popen(['../../src/mosquitto', '-p', '1888'], stderr=subprocess.PIPE)
 
 try:
     time.sleep(0.5)
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(30)
-    sock.connect(("localhost", 1888))
-    sock.send(connect_packet)
+    sock = mosq_test.do_client_connect(connect_packet, connack_packet, timeout=30)
+    sock.send(subscribe_packet)
 
-    if mosq_test.expect_packet(sock, "connack", connack_packet):
-        sock.send(subscribe_packet)
+    if mosq_test.expect_packet(sock, "suback", suback_packet):
+        will = subprocess.Popen(['./07-will-null-helper.py'])
+        will.wait()
 
-        if mosq_test.expect_packet(sock, "suback", suback_packet):
-            will = subprocess.Popen(['./07-will-null-helper.py'])
-            will.wait()
-
-            if mosq_test.expect_packet(sock, "publish", publish_packet):
-                rc = 0
+        if mosq_test.expect_packet(sock, "publish", publish_packet):
+            rc = 0
 
     sock.close()
 finally:

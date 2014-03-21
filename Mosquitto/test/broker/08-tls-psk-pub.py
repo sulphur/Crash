@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import subprocess
 import socket
@@ -48,23 +48,18 @@ broker = subprocess.Popen(['../../src/mosquitto', '-c', '08-tls-psk-pub.conf'], 
 try:
     time.sleep(0.5)
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(10)
-    sock.connect(("localhost", 1889))
-    sock.send(connect_packet)
+    sock = mosq_test.do_client_connect(connect_packet, connack_packet, port=1889, timeout=20)
+    sock.send(subscribe_packet)
 
-    if mosq_test.expect_packet(sock, "connack", connack_packet):
-        sock.send(subscribe_packet)
+    if mosq_test.expect_packet(sock, "suback", suback_packet):
+        pub = subprocess.Popen(['./c/08-tls-psk-pub.test'], env=env)
+        if pub.wait():
+            raise ValueError
+            exit(1)
 
-        if mosq_test.expect_packet(sock, "suback", suback_packet):
-            pub = subprocess.Popen(['./c/08-tls-psk-pub.test'], env=env)
-            if pub.wait():
-                raise ValueError
-                exit(1)
-
-            if mosq_test.expect_packet(sock, "publish", publish_packet):
-                rc = 0
-
+        if mosq_test.expect_packet(sock, "publish", publish_packet):
+            rc = 0
+    sock.close()
 finally:
     broker.terminate()
     broker.wait()

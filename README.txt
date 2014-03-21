@@ -6,8 +6,6 @@ I constructed the framework as follows:
 
 1) Downloaded an iOS port of the Mosquitto C library, created by Nicholas Humfrey and based on his Marquette wrapper: https://bitbucket.org/njh/mosquitto/commits/all
 
-2) Removed the Obj-C wrapper code, enabled TLS, and added an iOS build of OpenSSL created by Stefan Arentz: https://github.com/st3fan/ios-openssl
-
-3) Upgraded the Mosquitto C lib files to the later version
+2) Removed the Obj-C wrapper code and upgraded the Mosquitto C lib files to the latest version (1.3)
 
 And voila! Rather than a network library, I've created a doomsday device.

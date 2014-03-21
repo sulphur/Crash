@@ -15,6 +15,7 @@ test : test-compile 01 02 03 04 05 06 07 08 09 10
 	./01-connect-success.py
 	./01-connect-invalid-protonum.py
 	./01-connect-invalid-id-0.py
+	./01-connect-invalid-id-0-311.py
 	./01-connect-invalid-id-missing.py
 	./01-connect-anon-denied.py
 	./01-connect-uname-no-password-denied.py
@@ -38,6 +39,7 @@ test : test-compile 01 02 03 04 05 06 07 08 09 10
 	./03-publish-b2c-timeout-qos1.py
 	./03-publish-b2c-disconnect-qos1.py
 	./03-publish-c2b-timeout-qos2.py
+	./03-publish-c2b-disconnect-qos2.py
 	./03-publish-b2c-timeout-qos2.py
 	./03-publish-b2c-disconnect-qos2.py
 	./03-pattern-matching.py
@@ -62,6 +64,8 @@ test : test-compile 01 02 03 04 05 06 07 08 09 10
 07 :
 	./07-will-qos0.py
 	./07-will-null.py
+	./07-will-acl-denied.py
+	./07-will-null-topic.py
 
 08 :
 	./08-ssl-connect-no-auth.py
@@ -73,6 +77,7 @@ test : test-compile 01 02 03 04 05 06 07 08 09 10
 	./08-ssl-connect-cert-auth-crl.py
 	./08-ssl-connect-identity.py
 	./08-ssl-connect-no-identity.py
+	./08-ssl-bridge.py
 	./08-tls-psk-pub.py
 	./08-tls-psk-bridge.py
 

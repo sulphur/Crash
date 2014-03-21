@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import inspect
 import os
@@ -24,4 +24,7 @@ env['PYTHONPATH'] = '../../lib/python:'+pp
 
 client = subprocess.Popen(client_args, env=env)
 client.wait()
+if client.returncode:
+     (stdo, stde) = client.communicate()
+     print(stdo)
 exit(client.returncode)
